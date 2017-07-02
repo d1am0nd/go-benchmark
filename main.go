@@ -85,7 +85,7 @@ func AllDbResults(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 }
 // Returns hand written string
 func StringResult(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-    w.Write([]byte("Hello"))
+    w.Write([]byte("Lorem ipsum"))
 }
 
 

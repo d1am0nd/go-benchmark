@@ -3,6 +3,8 @@ package main
 import (
     "os"
     "fmt"
+    "time"
+    "strconv"
     "math/rand"
     "net/http"
     "encoding/json"
@@ -91,8 +93,13 @@ func StringResult(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 }
 
 func QSortResult(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-    qsort(GetNumbersFromFile())
-    w.Write([]byte("Sorted"))
+    numbers := GetNumbersFromFile()
+
+    then := time.Now()
+    qsort(numbers)
+    duration := time.Since(then)
+
+    w.Write([]byte("Sorted " + strconv.Itoa(len(numbers)) + " time sorting: " + duration.String()))
 }
 
 

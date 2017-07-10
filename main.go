@@ -3,6 +3,7 @@ package main
 import (
     "os"
     "fmt"
+    "math/rand"
     "net/http"
     "encoding/json"
 
@@ -45,6 +46,7 @@ func NewRouter() *httprouter.Router {
     r.GET("/api/first_db_result", FirstDbResult)
     r.GET("/api/all_db_results", AllDbResults)
     r.GET("/api/string_result", StringResult)
+    r.GET("/api/qsort_result", QSortResult)
     return r
 }
 
@@ -88,6 +90,17 @@ func StringResult(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
     w.Write([]byte("Lorem ipsum"))
 }
 
+func QSortResult(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+    sorted := qsort(GetNumbersFromFile())
+    rjson, err := json.Marshal(sorted)
+    if err != nil {
+        http.Error(w, err.Error(), 500)
+        return
+    }
+    w.Header().Set("Content-Type", "application/json")
+    w.Write(rjson)
+}
+
 
 /* Config stuff */
 type Conf struct {
@@ -117,6 +130,7 @@ func GetConf() Conf {
     if err != nil {
         panic(err)
     }
+    defer file.Close()
 
     decoder := json.NewDecoder(file)
     configuration := Conf{}
@@ -150,4 +164,57 @@ func GetAllTests() ([]TestModel, error) {
     tms := []TestModel{}
     err := SQL.Select(&tms, "SELECT * FROM tests")
     return tms, err
+}
+
+
+/** Quicksort stuff */
+func GetNumbersFromFile() []int {
+    var numbers []int
+
+    file, err := os.Open("./numbers.json")
+    if err != nil {
+        return []int{}
+    }
+    defer file.Close()
+
+    decoder := json.NewDecoder(file)
+
+    err = decoder.Decode(&numbers)
+    if err != nil {
+        return []int{}
+    }
+
+    return numbers
+}
+
+
+// https://stackoverflow.com/questions/15802890/idiomatic-quicksort-in-go
+func qsort(a []int) []int {
+  if len(a) < 2 { return a }
+
+  left, right := 0, len(a) - 1
+
+  // Pick a pivot
+  pivotIndex := rand.Int() % len(a)
+
+  // Move the pivot to the right
+  a[pivotIndex], a[right] = a[right], a[pivotIndex]
+
+  // Pile elements smaller than the pivot on the left
+  for i := range a {
+    if a[i] < a[right] {
+      a[i], a[left] = a[left], a[i]
+      left++
+    }
+  }
+
+  // Place the pivot after the last smaller element
+  a[left], a[right] = a[right], a[left]
+
+  // Go down the rabbit hole
+  qsort(a[:left])
+  qsort(a[left + 1:])
+
+
+  return a
 }

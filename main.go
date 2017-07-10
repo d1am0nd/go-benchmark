@@ -91,14 +91,8 @@ func StringResult(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 }
 
 func QSortResult(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-    sorted := qsort(GetNumbersFromFile())
-    rjson, err := json.Marshal(sorted)
-    if err != nil {
-        http.Error(w, err.Error(), 500)
-        return
-    }
-    w.Header().Set("Content-Type", "application/json")
-    w.Write(rjson)
+    qsort(GetNumbersFromFile())
+    w.Write([]byte("Sorted"))
 }
 
 
